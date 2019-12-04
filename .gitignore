@@ -1,0 +1,6 @@
+MetalRender.xcodeproj/
+Shared/Models/
+Shared/Assets.xcassets/
+MetalmacOS/Assets.xcassets/
+MetalRender/Assets.xcassets/
+.DS_Store
