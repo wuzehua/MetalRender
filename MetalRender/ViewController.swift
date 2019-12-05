@@ -11,6 +11,7 @@ import MetalKit
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var slector: UISegmentedControl!
     var renderer: Renderer?
     
     override func viewDidLoad() {

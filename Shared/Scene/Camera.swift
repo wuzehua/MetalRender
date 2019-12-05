@@ -15,10 +15,12 @@ class Camera: Node{
     var position: SIMD3<Float>
     var viewMatrix = GLKMatrix4Identity
     var projectionMatrix = GLKMatrix4Identity
+    var aspect: Float
     
     init(name: String, position: SIMD3<Float>){
         self.name = name
         self.position = position
+        self.aspect = 1
     }
     
     func adjustView(size: CGSize){}
@@ -37,7 +39,7 @@ class PerspectiveCamera: Camera{
     let rawUp: SIMD3<Float>
     var yaw: Float = 90 //偏航角，绕rawUp转
     var pitch: Float = 0 //俯仰角，绕Horizon转
-    var aspect: Float
+    
     
     let rawDirec: SIMD3<Float>
     let rawHorizon: SIMD3<Float>
@@ -64,8 +66,8 @@ class PerspectiveCamera: Camera{
         
         rawDirec = direction
         rawHorizon = horizon
-        self.aspect = aspect
         super.init(name: "Perspective Camera", position: position)
+        self.aspect = aspect
         viewMatrix = GLKMatrix4MakeLookAt(position.x, position.y, position.z, center.x, center.y, center.z, up.x, up.y, up.z)
         projectionMatrix = GLKMatrix4MakePerspective(radians(degree: fov), aspect, near, far)
         
@@ -124,7 +126,7 @@ class PerspectiveCamera: Camera{
     override func rotateAroundCneter(trans: SIMD2<Float>) {
         let angle = acosf(dot(direction, rawUp))
         var dy = trans.y
-        let dx = trans.x
+        let dx = -trans.x
         
         //防止direction与rawup在同一直线上造成锁
         if angle - trans.y >= 3

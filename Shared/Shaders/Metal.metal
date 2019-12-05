@@ -227,7 +227,7 @@ fragment float4 pbr_fragment_main(VertexOut in [[stage_in]],
     
     float3 IBL = IBLDiffuse + specMipColor * IBLSpecular;
     
-    //float3 color = IBL;
+
     float3 color = IBL + L;
     color = color / (color + 1);
     color = pow(color, 1 / 2.2);

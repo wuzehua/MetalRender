@@ -38,6 +38,7 @@ class Skybox{
     
     func render(renderEncoder: MTLRenderCommandEncoder, uniform: Uniforms)
     {
+        renderEncoder.pushDebugGroup("Render Skybox")
         renderEncoder.setRenderPipelineState(pipelineState)
         renderEncoder.setDepthStencilState(depthStencilState)
         renderEncoder.setVertexBuffer(mesh.vertexBuffers[0].buffer, offset: 0, index: 0)
@@ -53,6 +54,7 @@ class Skybox{
         
         renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: submesh.indexCount, indexType: submesh.indexType, indexBuffer: submesh.indexBuffer.buffer, indexBufferOffset: 0)
         
+        renderEncoder.popDebugGroup()
     }
     
     private static func loadSkyboxTexture(name: String) -> MTLTexture?
@@ -93,7 +95,7 @@ class Skybox{
         let pipelineDescriptor = MTLRenderPipelineDescriptor()
         pipelineDescriptor.vertexFunction = vertexFunc
         pipelineDescriptor.fragmentFunction = fragmentFunc
-        pipelineDescriptor.sampleCount = 4
+        //pipelineDescriptor.sampleCount = 4
         pipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(vertexDescriptor)
         pipelineDescriptor.colorAttachments[0].pixelFormat = Renderer.colorPixelFormat
         pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float

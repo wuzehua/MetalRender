@@ -22,6 +22,7 @@ class TextureCollection{
     var normalTextures:[MTLTexture] = []
     var roughnessTextures:[MTLTexture] = []
     var metallicTextures:[MTLTexture] = []
+    static var brdfLut: MTLTexture? = nil
     
     func getTexture(index: Int, type: TextureType)-> MTLTexture?
     {

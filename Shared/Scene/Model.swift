@@ -115,7 +115,7 @@ class Model: ModelNode{
         let pipelineDescriptor = MTLRenderPipelineDescriptor()
         pipelineDescriptor.vertexFunction = vertexFunction
         pipelineDescriptor.fragmentFunction = fragmentFunction
-        pipelineDescriptor.sampleCount = 4
+        //pipelineDescriptor.sampleCount = 4
         pipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(vertexDescriptor)
         pipelineDescriptor.colorAttachments[0].pixelFormat = Renderer.colorPixelFormat
         pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
@@ -130,6 +130,36 @@ class Model: ModelNode{
         }
         
         return pipelineState
+        
+    }
+    
+    func render(renderEncoder: MTLRenderCommandEncoder, textureCollection: TextureCollection, renderFunc:()->Void){
+        
+        renderEncoder.pushDebugGroup("Render \(name)")
+        
+        renderEncoder.setRenderPipelineState(piplineRenderState)
+        
+        renderFunc()
+        
+        for (index, buffer) in vertexBuffers.enumerated() {
+            renderEncoder.setVertexBuffer(buffer.buffer, offset: 0, index: index)
+        }
+        
+        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: normalIndex, type: .Normal), index: Int(NormalTexture.rawValue))
+        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: colorIndex, type: .Color), index: Int(ColorTexture.rawValue))
+        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: roughnessIndex, type: .Roughness), index: Int(Roughness.rawValue))
+        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: metallicIndex, type: .Metallic), index: Int(Metallic.rawValue))
+        
+        for submesh in submeshes{
+            
+            renderEncoder.drawIndexedPrimitives(type: .triangle,
+                                                indexCount: submesh.indexCount,
+                                                indexType: submesh.indexType,
+                                                indexBuffer: submesh.indexBuffer.buffer,
+                                                indexBufferOffset: submesh.indexBuffer.offset)
+        }
+        
+        renderEncoder.popDebugGroup()
         
     }
     

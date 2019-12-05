@@ -42,7 +42,7 @@ class ViewController: NSViewController {
     }
     
     override func rightMouseDown(with event: NSEvent) {
-        renderer?.modelIndex = ((renderer?.modelIndex ?? 0) + 1) % (renderer?.models.count ?? 1)
+        renderer?.modelIndex = ((renderer?.modelIndex ?? 0) + 1) % (renderer?.scene.models.count ?? 1)
     }
 
 }
