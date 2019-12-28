@@ -29,9 +29,37 @@ class ViewController: UIViewController {
         metalView.addGestureRecognizer(pinchRecognizer)
         
     }
+    @IBAction func forwardTouchDown(_ sender: UIButton) {
+        var direction = Direction.None
+        switch sender.titleLabel?.text {
+        case "back":
+            direction = .Back
+        case "forward":
+            direction = .Forward
+        case "left":
+            direction = .Left
+        case "right":
+            direction = .Right
+        case "up":
+            direction = .Up
+        case "down":
+            direction = .Down
+        default:
+            break
+        }
+        renderer?.direction = direction
+        if direction != .None{
+            renderer?.moving = true
+        }
+    }
+    
+    @IBAction func stopMoving(_ sender: UIButton) {
+        renderer?.direction = .None
+        renderer?.moving = false
+    }
     
     @IBAction func changeModel(_ sender: UISegmentedControl) {
-        renderer?.modelIndex = sender.selectedSegmentIndex
+        //renderer?.modelIndex = sender.selectedSegmentIndex
     }
     
 }

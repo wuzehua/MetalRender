@@ -143,19 +143,20 @@ fragment float4 fragment_main(VertexOut in [[stage_in]],
     return float4(color, 1);
 }
 
-
+[[early_fragment_tests]]
 fragment float4 pbr_fragment_main(VertexOut in [[stage_in]],
                                   texture2d<float> brdfLut[[texture(BRDFLut)]],
                                   texture2d<float> normalMap[[texture(NormalTexture)]],
                                   texture2d<float> colorTexture [[texture(ColorTexture)]],
                                   texture2d<float> roughnessTexture[[texture(Roughness)]],
                                   texture2d<float> metallicTexture[[texture(Metallic)]],
+                                  texture2d<float> aoTexture[[texture(AOTexture)]],
                                   texturecube<float> skybox[[texture(SkyboxCube)]],
                                   texturecube<float> skyboxEnvTexture [[texture(SkyboxEnv)]],
                                   constant PointLight* lights [[buffer(LightBuffer)]],
                                   constant FragmentUniform& uniform [[buffer(FragmentUniformBuffer)]])
 {
-    constexpr sampler textureSampler;
+    constexpr sampler textureSampler(min_filter::linear, mag_filter::linear);
     float3 T = normalize(in.tangentWorld);
     float3 B = normalize(in.bitangentWorld);
     float3 N = normalize(in.normalWorld);
@@ -227,10 +228,11 @@ fragment float4 pbr_fragment_main(VertexOut in [[stage_in]],
     
     float3 IBL = IBLDiffuse + specMipColor * IBLSpecular;
     
-
-    float3 color = IBL + L;
+    float3 ao = aoTexture.sample(textureSampler, in.uv).xyz;
+    
+    float3 color = (IBL + L) * ao;
     color = color / (color + 1);
-    color = pow(color, 1 / 2.2);
+    //color = pow(color, 1 / 2.2);
     return float4(color,1.0);
 }
 

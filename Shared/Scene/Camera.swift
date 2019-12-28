@@ -8,7 +8,18 @@
 
 import GLKit
 
-let sensitivity:Float = 0.05
+enum Direction {
+    case Forward
+    case Back
+    case Left
+    case Right
+    case Up
+    case Down
+    case None
+}
+
+let velocity:Float = 0.02
+let sensitivity:Float = 0.1
 
 class Camera: Node{
     var name: String
@@ -27,6 +38,7 @@ class Camera: Node{
     func rotateCamera(trans: SIMD2<Float>){}
     func rotateAroundCneter(trans: SIMD2<Float>){}
     func zoom(deltaAngle: Float){}
+    func move(dir: Direction){}
 }
 
 class PerspectiveCamera: Camera{
@@ -160,4 +172,31 @@ class PerspectiveCamera: Camera{
         viewMatrix = GLKMatrix4MakeLookAt(position.x, position.y, position.z, center.x, center.y, center.z, up.x, up.y, up.z)
         
     }
+    
+    override func move(dir: Direction) {
+        switch dir {
+        case .Forward:
+            position += (velocity * direction)
+        case .Back:
+            position -= (velocity * direction)
+        case .Right:
+            position += (velocity * horizon)
+        case .Left:
+            position -= (velocity * horizon)
+        case .Up:
+            position += (velocity * rawUp)
+        case .Down:
+            position -= (velocity * rawUp)
+        default:
+            break
+        }
+        
+        if dir != .None{
+            let center = position + direction
+            
+            viewMatrix = GLKMatrix4MakeLookAt(position.x, position.y, position.z, center.x, center.y, center.z, up.x, up.y, up.z)
+        }
+        
+    }
+    
 }

@@ -18,6 +18,9 @@ class Renderer: NSObject{
     static var library: MTLLibrary?
     static var colorPixelFormat: MTLPixelFormat!
     
+    var moving = false
+    var direction = Direction.None
+    
     var modelIndex = 0
     var timer: Float = 0
     var depthStencilState: MTLDepthStencilState!
@@ -56,7 +59,8 @@ class Renderer: NSObject{
     
     func rotateCamera(trans: SIMD2<Float>)
     {
-        scene.camera.rotateAroundCneter(trans: trans)
+        //scene.camera.rotateAroundCneter(trans: trans)
+        scene.camera.rotateCamera(trans: trans)
     }
     
     func zoom(deltaAngle: Float){
@@ -72,6 +76,9 @@ extension Renderer: MTKViewDelegate{
     
     func draw(in view: MTKView) {
         
+        if moving{
+            scene.updateCameraPosition(diretion: direction)
+        }
         
         guard let descriptor = view.currentRenderPassDescriptor,
             let commandBuffer = Renderer.commandQueue.makeCommandBuffer(),

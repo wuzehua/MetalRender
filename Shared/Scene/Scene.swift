@@ -10,8 +10,10 @@ import Foundation
 import MetalKit
 import GLKit
 
+
+
 class Scene {
-    var camera: Camera!
+    var camera: PerspectiveCamera!
     var models:[Model] = []
     var lights:[PointLight] = []
     var skybox:Skybox!
@@ -26,39 +28,19 @@ class Scene {
     func setupTest() {
         camera = PerspectiveCamera(fov: 45, up: [0,1,0], position: [0,0,3], center: [0,0,0], aspect: 1, near: 0.01, far: 100)
         
-        let valve = Model(filename: "Valve", extension: "obj", name: "Valve", vertexFunc: "vertex_main", fragmentFuc: "pbr_fragment_main")
-        valve.scale = [2.5,2.5,2.5]
-        valve.rotate = (-.pi / 2, [1,0,0])
-        valve.position = [0,-0.5,0]
-        valve.loadTextureFromAsset(name: "ValveColor", type: .Color, collection: textureCollection)
-        valve.loadTextureFromAsset(name: "ValveNormal", type: .Normal, collection: textureCollection)
-        valve.loadTextureFromAsset(name: "ValveRoughness", type: .Roughness, collection: textureCollection)
-        valve.loadTextureFromAsset(name: "ValveMetallic", type: .Metallic, collection: textureCollection)
+
+        let gun = Model(filename: "tunnel", extension: "obj", name: "Tunnel", vertexFunc: "vertex_main", fragmentFuc: "pbr_fragment_main",collection: textureCollection)
         
-        let barrel = Model(filename: "Barrel", extension: "obj", name: "Barrel", vertexFunc: "vertex_main", fragmentFuc: "pbr_fragment_main")
-        barrel.scale = [0.1,0.1,0.1]
-        barrel.rotate = (-.pi / 2, [1,0,0])
-        barrel.position = [0,-0.5,0]
-        barrel.loadTextureFromAsset(name: "BarrelColor", type: .Color, collection: textureCollection)
-        barrel.loadTextureFromAsset(name: "BarrelNormal", type: .Normal, collection: textureCollection)
-        barrel.loadTextureFromAsset(name: "BarrelRoughness", type: .Roughness, collection: textureCollection)
-        barrel.loadTextureFromAsset(name: "BarrelMetallic", type: .Metallic, collection: textureCollection)
+        //gun.scale = [4,4,4]
+        gun.position = [0,-2,2.5]
 
-        let gun = Model(filename: "gun", extension: "obj", name: "Gun", vertexFunc: "vertex_main", fragmentFuc: "pbr_fragment_main")
-
-        gun.loadTextureFromAsset(name: "GunColor", type: .Color, collection: textureCollection)
-        gun.loadTextureFromAsset(name: "GunNormal", type: .Normal, collection: textureCollection)
-        gun.loadTextureFromAsset(name: "GunRoughness", type: .Roughness, collection: textureCollection)
-        gun.loadTextureFromAsset(name: "GunMetallic", type: .Metallic, collection: textureCollection)
         
         models.append(gun)
-        models.append(valve)
-        models.append(barrel)
         
         var light = PointLight()
-        light.position = SIMD3<Float>(2.0,0.0,0.0)
+        light.position = SIMD3<Float>(2.0,1.0,3.0)
         light.lightColor = SIMD3<Float>(1.0,1.0,1.0)
-        light.intensity = 5
+        light.intensity = 200
         lights.append(light)
         
         fragmentUniform.numOfLight = UInt32(lights.count)
@@ -101,6 +83,10 @@ class Scene {
     func adjustView(size: CGSize){
         camera.adjustView(size: size)
         vertexUniform.projectionMatrix = camera.projectionMatrix
+    }
+    
+    func updateCameraPosition(diretion: Direction){
+        camera.move(dir: diretion)
     }
     
 }

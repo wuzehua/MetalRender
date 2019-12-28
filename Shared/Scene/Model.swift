@@ -9,57 +9,22 @@
 import MetalKit
 
 class Model: ModelNode{
-    //let vertexBuffer: MTLBuffer
+    
     let vertexBuffers: [MTKMeshBuffer]
     let piplineRenderState: MTLRenderPipelineState
-    let submeshes: [MTKSubmesh]
-    var colorIndex = -1
-    var normalIndex = -1
-    var roughnessIndex = -1
-    var metallicIndex = -1
+    let submeshes:[Submesh]
+
     
-    func loadTexture(filename: String, extention ext:String, type: TextureType, collection: TextureCollection) {
-        let texture: MTLTexture?
-        do{
-            texture = try TextureCollection.loadTexture(filename: filename, extension: ext)
-        }catch let e{
-            fatalError(e.localizedDescription)
-        }
-        
-        updateTexture(texture: texture, collection: collection, type: type)
-        
-    }
-    
-    
-    func loadTextureFromAsset(name:String, type: TextureType, collection: TextureCollection)
-    {
-        let texture: MTLTexture?
-        do{
-            texture = try TextureCollection.loadTextureFromAsset(name: name)
-        }catch let e{
-            fatalError(e.localizedDescription)
-        }
-        
-        updateTexture(texture: texture, collection: collection, type: type)
-    }
-    
-    private func updateTexture(texture: MTLTexture?, collection: TextureCollection, type: TextureType)
-    {
-        let index = collection.addTexture(texture: texture, type: type)
-        
-        switch type {
-        case .Color:
-            colorIndex = index
-        case .Normal:
-            normalIndex = index
-        case .Roughness:
-            roughnessIndex = index
-        case .Metallic:
-            metallicIndex = index
-        default:
-            break
-        }
-    }
+//    init(filename: String, extension ext: String, name: String, renderPiplineDescriptor: MTLRenderPipelineDescriptor){
+//        let obj = Model.loadModel(fileName: filename, withExtension: ext, descriptor: Model.defaultVertexDescriptor, device: Renderer.device)
+//        let mesh = try! MTKMesh(mesh: obj, device: Renderer.device)
+//        submeshes = mesh.submeshes
+//        vertexBuffers = mesh.vertexBuffers
+//        piplineRenderState = Model.makePipelineState(vertexDescriptor: mesh.vertexDescriptor, renderPipelineDescriptor: renderPiplineDescriptor)
+//        
+//        super.init()
+//        self.name = name
+//    }
     
     static func loadModel(fileName: String, withExtension ext: String, descriptor: MDLVertexDescriptor, device: MTLDevice)->MDLMesh
     {
@@ -93,18 +58,26 @@ class Model: ModelNode{
         }
     }
     
-    
-    init(filename: String, extension ext: String, name: String, vertexFunc: String, fragmentFuc: String) {
-        let obj = Model.loadModel(fileName: filename, withExtension: ext, descriptor: Model.defaultVertexDescriptor, device: Renderer.device)
-        let mesh = try! MTKMesh(mesh: obj, device: Renderer.device)
-        submeshes = mesh.submeshes
+    init(filename: String, extension ext: String, name: String, vertexFunc: String, fragmentFuc: String,collection: TextureCollection){
+        let mdlMesh = Model.loadModel(fileName: filename, withExtension: ext, descriptor: Model.defaultVertexDescriptor, device: Renderer.device)
+        let mesh = try! MTKMesh(mesh: mdlMesh, device: Renderer.device)
+        //submeshes = mesh.submeshes
         vertexBuffers = mesh.vertexBuffers
         //vertexBuffer = mesh.vertexBuffers[0].buffer
         piplineRenderState = Model.makePipelineState(vertexDescriptor: mesh.vertexDescriptor, vertexFunc: vertexFunc, fragmentFuc: fragmentFuc)
+        //submeshe = [Submesh]()
+        //piplineRenderState = Model.makePipelineState(vertexDescriptor: , vertexFunc: vertexFunc, fragmentFuc: fragmentFuc)
+        submeshes = mdlMesh.submeshes?.enumerated().compactMap{ index, submesh in
+                (submesh as? MDLSubmesh).map{
+                    Submesh(submesh: mesh.submeshes[index], mdlSubmesh: $0, collection: collection)
+            }
+            } ?? []
         
         super.init()
         self.name = name
     }
+    
+    
     
     private static func makePipelineState(vertexDescriptor: MDLVertexDescriptor,vertexFunc: String, fragmentFuc: String)->MTLRenderPipelineState
     {
@@ -145,18 +118,20 @@ class Model: ModelNode{
             renderEncoder.setVertexBuffer(buffer.buffer, offset: 0, index: index)
         }
         
-        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: normalIndex, type: .Normal), index: Int(NormalTexture.rawValue))
-        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: colorIndex, type: .Color), index: Int(ColorTexture.rawValue))
-        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: roughnessIndex, type: .Roughness), index: Int(Roughness.rawValue))
-        renderEncoder.setFragmentTexture(textureCollection.getTexture(index: metallicIndex, type: .Metallic), index: Int(Metallic.rawValue))
         
         for submesh in submeshes{
+            renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.normal), index: Int(NormalTexture.rawValue))
+            renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.color), index: Int(ColorTexture.rawValue))
+            renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.roughness), index: Int(Roughness.rawValue))
+            renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.metallic), index: Int(Metallic.rawValue))
+            renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.ao), index: Int(AOTexture.rawValue))
             
+            let mesh = submesh.submesh
             renderEncoder.drawIndexedPrimitives(type: .triangle,
-                                                indexCount: submesh.indexCount,
-                                                indexType: submesh.indexType,
-                                                indexBuffer: submesh.indexBuffer.buffer,
-                                                indexBufferOffset: submesh.indexBuffer.offset)
+                                                indexCount: mesh.indexCount,
+                                                indexType: mesh.indexType,
+                                                indexBuffer: mesh.indexBuffer.buffer,
+                                                indexBufferOffset: mesh.indexBuffer.offset)
         }
         
         renderEncoder.popDebugGroup()

@@ -26,7 +26,8 @@ typedef enum {
     Metallic = 3,
     SkyboxCube = 4,
     SkyboxEnv = 5,
-    BRDFLut = 6
+    BRDFLut = 6,
+    AOTexture = 7
 } TextureIndex;
 
 typedef enum {

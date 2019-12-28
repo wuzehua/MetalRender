@@ -18,47 +18,18 @@ enum TextureType{
 
 class TextureCollection{
     
-    var colorTextures:[MTLTexture] = []
-    var normalTextures:[MTLTexture] = []
-    var roughnessTextures:[MTLTexture] = []
-    var metallicTextures:[MTLTexture] = []
+    var textures:[MTLTexture] = []
+    var textureTable:[String: Int] = [:]
     static var brdfLut: MTLTexture? = nil
     
-    func getTexture(index: Int, type: TextureType)-> MTLTexture?
-    {
-        if index < 0{
+    func getTexture(index:Int)-> MTLTexture?{
+        if index < 0 || index >= textures.count{
             return nil
         }
         
-        var result:MTLTexture? = nil
-        
-        switch type {
-        case .Color:
-            if index < colorTextures.count
-            {
-                result = colorTextures[index]
-            }
-        case .Normal:
-            if index < normalTextures.count
-            {
-                result = normalTextures[index]
-            }
-        case .Roughness:
-            if index < roughnessTextures.count
-            {
-                result = roughnessTextures[index]
-            }
-        case .Metallic:
-            if index < metallicTextures.count
-            {
-                result = metallicTextures[index]
-            }
-        default:
-            break
-        }
-        
-        return result
+        return textures[index]
     }
+    
     
     static func loadTexture(filename: String, extension ext: String) throws -> MTLTexture?
     {
@@ -98,32 +69,29 @@ class TextureCollection{
         return try textureLoader.newTexture(name: name, scaleFactor: 1.0, bundle: Bundle.main, options: nil)
     }
     
-    
-    func addTexture(texture: MTLTexture?, type: TextureType) -> Int {
-        if texture == nil
-        {
+    func addTexture(texture: MTLTexture?) -> Int {
+        if texture == nil{
             return -1
+        }else{
+            textures.append(texture!)
+            return textures.count - 1
         }
-        
-        var result = 0
-        switch type {
-        case .Color:
-            colorTextures.append(texture!)
-            result = colorTextures.count - 1
-        case .Normal:
-            normalTextures.append(texture!)
-            result = normalTextures.count - 1
-        case .Roughness:
-            roughnessTextures.append(texture!)
-            result = roughnessTextures.count - 1
-        case .Metallic:
-            metallicTextures.append(texture!)
-            result = metallicTextures.count - 1
-        default:
-            result = -1
-        }
-        return result
+    }
     
+    
+    func loadTextureFromAsset(name: String) throws -> Int{
+        let index = textureTable[name]
+        if index == nil{
+            let texture = try TextureCollection.loadTextureFromAsset(name: name)
+            let i = addTexture(texture: texture)
+            if i != -1{
+                textureTable[name] = i
+            }
+            return i
+        }else{
+            print("\(name) is already loaded!")
+            return index!
+        }
     }
     
 }
