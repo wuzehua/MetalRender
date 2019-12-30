@@ -15,37 +15,46 @@ import GLKit
 class Scene {
     var camera: PerspectiveCamera!
     var models:[Model] = []
-    var lights:[PointLight] = []
+    var lightBuffer:MTLBuffer!
     var skybox:Skybox!
     var textureCollection = TextureCollection()
-    var vertexUniform = Uniforms()
-    var fragmentUniform = FragmentUniform()
+    var lightsCount: UInt32 = 0
     
-    init(){
-        setupTest()
+    
+    init(renderPiplineDescriptor: MTLRenderPipelineDescriptor, skyboxDescriptor: MTLRenderPipelineDescriptor, vertexFunction:String, fragmentFunction: String){
+        setupTest(renderPiplineDescriptor: renderPiplineDescriptor, skyboxDescriptor: skyboxDescriptor,vertexFunction:vertexFunction, fragmentFunction:fragmentFunction)
     }
     
-    func setupTest() {
+    func setupTest(renderPiplineDescriptor: MTLRenderPipelineDescriptor, skyboxDescriptor: MTLRenderPipelineDescriptor,
+                   vertexFunction:String, fragmentFunction:String) {
+        
+        let valve = Model(filename: "tunnel", extension: "obj", name: "Tunnel", renderPipelineDescriptor: renderPiplineDescriptor,collection:textureCollection, vertexFunction:vertexFunction, fragmentFunction:fragmentFunction)
+        
+        
+        valve.position = [0,-2,3]
+        
+        
+        models.append(valve)
+        skybox = Skybox(filename: "SkyboxMap", pipelineDescriptor: skyboxDescriptor)
+        sharedSetUp()
+    }
+    
+    func sharedSetUp(){
         camera = PerspectiveCamera(fov: 45, up: [0,1,0], position: [0,0,3], center: [0,0,0], aspect: 1, near: 0.01, far: 100)
-        
-
-        let gun = Model(filename: "tunnel", extension: "obj", name: "Tunnel", vertexFunc: "vertex_main", fragmentFuc: "pbr_fragment_main",collection: textureCollection)
-        
-        //gun.scale = [4,4,4]
-        gun.position = [0,-2,2.5]
-
-        
-        models.append(gun)
-        
+        var lights:[PointLight] = []
         var light = PointLight()
-        light.position = SIMD3<Float>(2.0,1.0,3.0)
+        light.position = SIMD3<Float>(0,4.0,3.0)
         light.lightColor = SIMD3<Float>(1.0,1.0,1.0)
-        light.intensity = 200
+        light.intensity = 300 
+        light.radius = 5
         lights.append(light)
         
-        fragmentUniform.numOfLight = UInt32(lights.count)
+        lightBuffer = Renderer.device.makeBuffer(bytes: lights, length: MemoryLayout<PointLight>.stride * lights.count, options: [])
+        lightsCount = UInt32(lights.count)
         
-        skybox = Skybox(filename: "SkyboxMap")
+        //fragmentUniform.numOfLight = UInt32(lights.count)
+        
+        
         
         if TextureCollection.brdfLut == nil{
             do{
@@ -55,34 +64,12 @@ class Scene {
                 fatalError(e.localizedDescription)
             }
         }
-        
     }
     
-    func renderTest(renderEncoder: MTLRenderCommandEncoder, index: Int){
-        var inversable = true
-        vertexUniform.projectionMatrix = camera.projectionMatrix
-        vertexUniform.viewMatrix = camera.viewMatrix
-        vertexUniform.modelMatrix = models[index].modelMatrix
-        vertexUniform.normalMatrix = GLKMatrix4Transpose(GLKMatrix4Invert(vertexUniform.modelMatrix, &inversable))
-        
-        fragmentUniform.cameraPosition = camera.position
-        
-        models[index].render(renderEncoder: renderEncoder, textureCollection: textureCollection, renderFunc:{
-                renderEncoder.setVertexBytes(&vertexUniform, length: MemoryLayout<Uniforms>.stride, index: Int(UniformBuffer.rawValue))
-                renderEncoder.setFragmentBytes(&lights, length: MemoryLayout<PhongPointLight>.stride * lights.count, index: Int(LightBuffer.rawValue))
-                renderEncoder.setFragmentBytes(&fragmentUniform, length: MemoryLayout<FragmentUniform>.stride, index:   Int(FragmentUniformBuffer.rawValue))
-                renderEncoder.setFragmentTexture(TextureCollection.brdfLut, index: Int(BRDFLut.rawValue))
-                renderEncoder.setFragmentTexture(skybox.skyboxEnv, index: Int(SkyboxEnv.rawValue))
-                renderEncoder.setFragmentTexture(skybox.skybox, index: Int(SkyboxCube.rawValue))
-            }
-        )
-        
-        skybox.render(renderEncoder: renderEncoder, uniform: vertexUniform)
-    }
     
     func adjustView(size: CGSize){
         camera.adjustView(size: size)
-        vertexUniform.projectionMatrix = camera.projectionMatrix
+        //vertexUniform.projectionMatrix = camera.projectionMatrix
     }
     
     func updateCameraPosition(diretion: Direction){

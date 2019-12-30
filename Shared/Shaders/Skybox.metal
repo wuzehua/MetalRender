@@ -20,6 +20,13 @@ struct VertexOut{
     float3 point;
 };
 
+struct GBufferOut{
+    float4 color[[color(0)]];
+    float4 normal[[color(1)]];
+    float4 position[[color(2)]];
+    float4 roughness[[color(3)]];
+};
+
 vertex VertexOut skybox_vertex(const VertexIn in [[stage_in]],
                                constant float4x4& pvMatrix [[buffer(1)]])
 {
@@ -36,3 +43,18 @@ fragment half4 skybox_fragment(const VertexOut in [[stage_in]],
     half4 color = skyboxCube.sample(sample, in.point,level(0.95));
     return color;
 }
+
+
+fragment GBufferOut skybox_gbuffer_frag(const VertexOut in [[stage_in]],
+                                        texturecube<half> skyboxCube [[texture(SkyboxCube)]])
+{
+    constexpr sampler sample(filter::linear, mip_filter::linear);
+    half4 color = skyboxCube.sample(sample, in.point);
+    GBufferOut out;
+    out.color = float4(color);
+    out.normal = float4(0);
+    out.position = float4(0);
+    out.roughness = float4(0);
+    return out;
+}
+

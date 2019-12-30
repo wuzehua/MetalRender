@@ -12,7 +12,7 @@ import MetalKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var slector: UISegmentedControl!
-    var renderer: Renderer?
+    var renderer: RendererDeffer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,7 +22,7 @@ class ViewController: UIViewController {
             fatalError("Metal View is not set up")
         }
         
-        renderer = Renderer(metalView: metalView)
+        renderer = RendererDeffer(metalView: metalView)
         let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan(gesture:)))
         let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(gesture:)))
         metalView.addGestureRecognizer(panRecognizer)

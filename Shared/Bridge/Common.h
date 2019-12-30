@@ -27,11 +27,16 @@ typedef enum {
     SkyboxCube = 4,
     SkyboxEnv = 5,
     BRDFLut = 6,
-    AOTexture = 7
+    PositionTexture = 7,
+    SSAOTexture = 8,
+    ImageTexture = 9,
+    RoughnessTexture = 10,
+    AOTexture = 11
 } TextureIndex;
 
 typedef enum {
     VertexBuffer = 0,
+    UVBuffer = 1,
     UniformBuffer = 11,
     LightBuffer = 12,
     FragmentUniformBuffer = 13
@@ -49,7 +54,9 @@ typedef struct {
     vector_float3 position;
     vector_float3 lightColor;
     float intensity;
+    float radius;
 } PointLight;
+
 
 typedef struct {
     unsigned int numOfLight;

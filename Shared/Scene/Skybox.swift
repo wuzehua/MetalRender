@@ -36,6 +36,24 @@ class Skybox{
         depthStencilState = Skybox.makeDepthStencilState()
     }
     
+    init(filename: String,pipelineDescriptor: MTLRenderPipelineDescriptor) {
+        let cube = Primitive.makeCube(device: Renderer.device, size: 1, isSkybox: true)
+        //let texture: MTLTexture?
+        do{
+            mesh = try MTKMesh(mesh: cube, device: Renderer.device)
+            //texture = try TextureCollection.loadTextureFromAsset(name: filename)
+        }catch let e
+        {
+            fatalError(e.localizedDescription)
+        }
+        
+        skybox = Skybox.loadSkyboxTexture(name: filename)
+        skyboxEnv = Skybox.loadCubeTexture(name: filename + "Env")
+        
+        pipelineState = Skybox.makePipelineState(vertexDescriptor: cube.vertexDescriptor,pipelineDescriptor: pipelineDescriptor)
+        depthStencilState = Skybox.makeDepthStencilState()
+    }
+    
     func render(renderEncoder: MTLRenderCommandEncoder, uniform: Uniforms)
     {
         renderEncoder.pushDebugGroup("Render Skybox")
@@ -83,7 +101,21 @@ class Skybox{
         return texture
     }
     
-    
+    static func makePipelineState(vertexDescriptor: MDLVertexDescriptor, pipelineDescriptor: MTLRenderPipelineDescriptor)-> MTLRenderPipelineState
+    {
+        pipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(vertexDescriptor)
+        
+        let pipelineState: MTLRenderPipelineState
+        
+        do{
+            pipelineState = try Renderer.device.makeRenderPipelineState(descriptor: pipelineDescriptor)
+        }catch let e
+        {
+            fatalError(e.localizedDescription)
+        }
+        
+        return pipelineState
+    }
     
     
     static func makePipelineState(vertexDescriptor: MDLVertexDescriptor) -> MTLRenderPipelineState
@@ -97,7 +129,9 @@ class Skybox{
         pipelineDescriptor.fragmentFunction = fragmentFunc
         //pipelineDescriptor.sampleCount = 4
         pipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(vertexDescriptor)
-        pipelineDescriptor.colorAttachments[0].pixelFormat = Renderer.colorPixelFormat
+        pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+        pipelineDescriptor.colorAttachments[1].pixelFormat = .rgba16Float
+        pipelineDescriptor.colorAttachments[2].pixelFormat = .rgba16Float
         pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
         
         let pipelineState: MTLRenderPipelineState

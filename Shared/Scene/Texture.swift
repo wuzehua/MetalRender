@@ -51,7 +51,10 @@ class TextureCollection{
     {
         let textureLoader = MTKTextureLoader(device: Renderer.device)
         print("Load \(name) from Assets")
-        return try textureLoader.newTexture(name: name, scaleFactor: 1.0, bundle: Bundle.main, options: nil)
+        let options:[MTKTextureLoader.Option: Any] = [.textureStorageMode: NSNumber(value: MTLStorageMode.private.rawValue),
+        .textureUsage: NSNumber(value: MTLTextureUsage.shaderRead.rawValue)]
+        
+        return try textureLoader.newTexture(name: name, scaleFactor: 1.0, bundle: Bundle.main, options: options)
     }
     
     static func loadCubeTextureFromAsset(name: String) throws -> MTLTexture?

@@ -11,20 +11,29 @@ import MetalKit
 class Model: ModelNode{
     
     let vertexBuffers: [MTKMeshBuffer]
-    let piplineRenderState: MTLRenderPipelineState
+    //let piplineRenderState: MTLRenderPipelineState
     let submeshes:[Submesh]
 
+    init(filename: String, extension ext: String, name: String, renderPipelineDescriptor: MTLRenderPipelineDescriptor, collection:TextureCollection,vertexFunction:String, fragmentFunction:String) {
+        let mdlMesh = Model.loadModel(fileName: filename, withExtension: ext, descriptor: Model.defaultVertexDescriptor, device: Renderer.device)
+        let mesh = try! MTKMesh(mesh: mdlMesh, device: Renderer.device)
+        
+        vertexBuffers = mesh.vertexBuffers
+        
+        renderPipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(mesh.vertexDescriptor)
+        submeshes = mdlMesh.submeshes?.enumerated().compactMap{ index, submesh in
+            (submesh as? MDLSubmesh).map{
+                Submesh(submesh: mesh.submeshes[index], mdlSubmesh: $0, collection: collection,descriptor: renderPipelineDescriptor, vertexFunction: vertexFunction, fragmentFunction: fragmentFunction)
+        }
+        } ?? []
+        
+        super.init()
+        self.name = name
+        
+    }
     
-//    init(filename: String, extension ext: String, name: String, renderPiplineDescriptor: MTLRenderPipelineDescriptor){
-//        let obj = Model.loadModel(fileName: filename, withExtension: ext, descriptor: Model.defaultVertexDescriptor, device: Renderer.device)
-//        let mesh = try! MTKMesh(mesh: obj, device: Renderer.device)
-//        submeshes = mesh.submeshes
-//        vertexBuffers = mesh.vertexBuffers
-//        piplineRenderState = Model.makePipelineState(vertexDescriptor: mesh.vertexDescriptor, renderPipelineDescriptor: renderPiplineDescriptor)
-//        
-//        super.init()
-//        self.name = name
-//    }
+    
+
     
     static func loadModel(fileName: String, withExtension ext: String, descriptor: MDLVertexDescriptor, device: MTLDevice)->MDLMesh
     {
@@ -58,59 +67,11 @@ class Model: ModelNode{
         }
     }
     
-    init(filename: String, extension ext: String, name: String, vertexFunc: String, fragmentFuc: String,collection: TextureCollection){
-        let mdlMesh = Model.loadModel(fileName: filename, withExtension: ext, descriptor: Model.defaultVertexDescriptor, device: Renderer.device)
-        let mesh = try! MTKMesh(mesh: mdlMesh, device: Renderer.device)
-        //submeshes = mesh.submeshes
-        vertexBuffers = mesh.vertexBuffers
-        //vertexBuffer = mesh.vertexBuffers[0].buffer
-        piplineRenderState = Model.makePipelineState(vertexDescriptor: mesh.vertexDescriptor, vertexFunc: vertexFunc, fragmentFuc: fragmentFuc)
-        //submeshe = [Submesh]()
-        //piplineRenderState = Model.makePipelineState(vertexDescriptor: , vertexFunc: vertexFunc, fragmentFuc: fragmentFuc)
-        submeshes = mdlMesh.submeshes?.enumerated().compactMap{ index, submesh in
-                (submesh as? MDLSubmesh).map{
-                    Submesh(submesh: mesh.submeshes[index], mdlSubmesh: $0, collection: collection)
-            }
-            } ?? []
-        
-        super.init()
-        self.name = name
-    }
     
-    
-    
-    private static func makePipelineState(vertexDescriptor: MDLVertexDescriptor,vertexFunc: String, fragmentFuc: String)->MTLRenderPipelineState
-    {
-        let library = Renderer.library
-        let vertexFunction = library?.makeFunction(name: vertexFunc)
-        let fragmentFunction = library?.makeFunction(name: fragmentFuc)
-        
-        let pipelineDescriptor = MTLRenderPipelineDescriptor()
-        pipelineDescriptor.vertexFunction = vertexFunction
-        pipelineDescriptor.fragmentFunction = fragmentFunction
-        //pipelineDescriptor.sampleCount = 4
-        pipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(vertexDescriptor)
-        pipelineDescriptor.colorAttachments[0].pixelFormat = Renderer.colorPixelFormat
-        pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
-        
-        let pipelineState: MTLRenderPipelineState
-        
-        do{
-            pipelineState = try Renderer.device.makeRenderPipelineState(descriptor: pipelineDescriptor)
-        }catch let e
-        {
-            fatalError(e.localizedDescription)
-        }
-        
-        return pipelineState
-        
-    }
     
     func render(renderEncoder: MTLRenderCommandEncoder, textureCollection: TextureCollection, renderFunc:()->Void){
         
         renderEncoder.pushDebugGroup("Render \(name)")
-        
-        renderEncoder.setRenderPipelineState(piplineRenderState)
         
         renderFunc()
         
@@ -120,6 +81,7 @@ class Model: ModelNode{
         
         
         for submesh in submeshes{
+            renderEncoder.setRenderPipelineState(submesh.pipelinestate)
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.normal), index: Int(NormalTexture.rawValue))
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.color), index: Int(ColorTexture.rawValue))
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.roughness), index: Int(Roughness.rawValue))
