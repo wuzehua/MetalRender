@@ -31,21 +31,26 @@ class Scene {
         let valve = Model(filename: "tunnel", extension: "obj", name: "Tunnel", renderPipelineDescriptor: renderPiplineDescriptor,collection:textureCollection, vertexFunction:vertexFunction, fragmentFunction:fragmentFunction)
         
         
-        valve.position = [0,-2,3]
         
+        let ninja = Model(filename: "ninja", extension: "obj", name: "Ninja", renderPipelineDescriptor: renderPiplineDescriptor, collection: textureCollection, vertexFunction: vertexFunction, fragmentFunction: fragmentFunction)
+        ninja.scale = [3,3,3]
+        ninja.rotate = (Float.pi, [0,1,0])
+        ninja.position = [0,0,3]
         
+        models.append(ninja)
         models.append(valve)
+        
         skybox = Skybox(filename: "SkyboxMap", pipelineDescriptor: skyboxDescriptor)
         sharedSetUp()
     }
     
     func sharedSetUp(){
-        camera = PerspectiveCamera(fov: 45, up: [0,1,0], position: [0,0,3], center: [0,0,0], aspect: 1, near: 0.01, far: 100)
+        camera = PerspectiveCamera(fov: 45, up: [0,1,0], position: [0,2,3], center: [0,2,0], aspect: 1, near: 0.01, far: 100)
         var lights:[PointLight] = []
         var light = PointLight()
-        light.position = SIMD3<Float>(0,4.0,3.0)
+        light.position = SIMD3<Float>(0,4.0,-2.0)
         light.lightColor = SIMD3<Float>(1.0,1.0,1.0)
-        light.intensity = 300 
+        light.intensity = 150
         light.radius = 5
         lights.append(light)
         

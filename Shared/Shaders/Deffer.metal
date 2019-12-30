@@ -58,6 +58,9 @@ float3 Fresnel_Schlick_Roughness(float3 n, float3 v, float3 F0, float roughness)
     return F0 + (max(float3(1 - roughness), F0) - F0) * exp2(t);
 }
 
+float pow4(float a){
+    return a * a * a * a;
+}
 
 
 
@@ -104,12 +107,12 @@ fragment float4 deffer_fragment_main(VertexOut in[[stage_in]],
     
     float3 v = normalize(uniform.cameraPosition - shadePoint);
     
-    float3 diffuse = mix(albedo, float3(0), metallic); //金属度越高，漫反射越少
+    //float3 diffuse = mix(albedo, float3(0), metallic); //金属度越高，漫反射越少
     float3 specular = mix(float3(0.04), albedo, metallic); //金属度越高，反射光越接近本身颜色，非金属材质反射默认设置为0.04
     
     float3 L = float3(0);
        
-    float3 lamber_diffuse = diffuse / M_PI_F;
+    float3 lamber_diffuse = specular / M_PI_F;
     
     for(unsigned int i = 0;i < uniform.numOfLight; ++i)
     {
@@ -122,6 +125,7 @@ fragment float4 deffer_fragment_main(VertexOut in[[stage_in]],
         //}
         
         float denominator = dis * dis + 1;
+        //float falloffnumerator = saturate( 1 - pow4(dis / lights[i].radius));
         l = normalize(l);
         
         float3 h = normalize(v + l);
