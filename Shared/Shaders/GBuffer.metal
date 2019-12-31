@@ -76,7 +76,8 @@ fragment GBufferOut fragment_gbuffer(VertexOut in[[stage_in]],
                                      texture2d<float> colorTexture [[texture(ColorTexture), function_constant(hasColorTexture)]],
                                      texture2d<float> roughnessTexture[[texture(Roughness), function_constant(hasRoughnessTexture)]],
                                      texture2d<float> metallicTexture[[texture(Metallic), function_constant(hasMetallicTexture)]],
-                                     texture2d<float> aoTexture[[texture(AOTexture), function_constant(hasAOTexture)]]
+                                     texture2d<float> aoTexture[[texture(AOTexture), function_constant(hasAOTexture)]],
+                                     constant Material& material[[buffer(MaterialBuffer)]]
                                      )
 {
     constexpr sampler textureSampler(min_filter::linear, mag_filter::linear);
@@ -100,7 +101,7 @@ fragment GBufferOut fragment_gbuffer(VertexOut in[[stage_in]],
     if(hasColorTexture){
         out.albedo = colorTexture.sample(textureSampler, in.uv);
     }else{
-        out.albedo = float4(1);
+        out.albedo = float4(material.albedo,1);
     }
     out.normal = float4(n,0);
     out.position = in.shadePoint;
@@ -108,13 +109,13 @@ fragment GBufferOut fragment_gbuffer(VertexOut in[[stage_in]],
     if(hasRoughnessTexture){
         out.roughness.x = roughnessTexture.sample(textureSampler, in.uv).r;
     }else{
-        out.roughness.x = 0.9;
+        out.roughness.x = material.roughness;
     }
     
     if(hasMetallicTexture){
         out.roughness.y = metallicTexture.sample(textureSampler, in.uv).r;
     }else{
-        out.roughness.y = 0.9;
+        out.roughness.y = material.metallic;
     }
     
     if(hasAOTexture){

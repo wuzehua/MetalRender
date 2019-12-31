@@ -173,7 +173,7 @@ fragment float4 deffer_fragment_main(VertexOut in[[stage_in]],
     
     float3 color = (IBL + L) * ao;
     color = color / (color + 1);
-    //color = pow(color, 2.2);
+    //color = pow(color, 1 / 2.2);
     
     
     return float4(color,1);

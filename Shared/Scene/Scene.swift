@@ -28,16 +28,16 @@ class Scene {
     func setupTest(renderPiplineDescriptor: MTLRenderPipelineDescriptor, skyboxDescriptor: MTLRenderPipelineDescriptor,
                    vertexFunction:String, fragmentFunction:String) {
         
-        let valve = Model(filename: "tunnel", extension: "obj", name: "Tunnel", renderPipelineDescriptor: renderPiplineDescriptor,collection:textureCollection, vertexFunction:vertexFunction, fragmentFunction:fragmentFunction)
+        let valve = Model(filename: "spaceStation", extension: "obj", name: "SpaceStation", renderPipelineDescriptor: renderPiplineDescriptor,collection:textureCollection, vertexFunction:vertexFunction, fragmentFunction:fragmentFunction)
         
+        valve.scale = [0.1,0.1,0.1]
         
-        
-        let ninja = Model(filename: "ninja", extension: "obj", name: "Ninja", renderPipelineDescriptor: renderPiplineDescriptor, collection: textureCollection, vertexFunction: vertexFunction, fragmentFunction: fragmentFunction)
-        ninja.scale = [3,3,3]
-        ninja.rotate = (Float.pi, [0,1,0])
-        ninja.position = [0,0,3]
-        
-        models.append(ninja)
+//        let ninja = Model(filename: "ninja", extension: "obj", name: "Ninja", renderPipelineDescriptor: renderPiplineDescriptor, collection: textureCollection, vertexFunction: vertexFunction, fragmentFunction: fragmentFunction)
+//        ninja.scale = [3,3,3]
+//        ninja.rotate = (Float.pi, [0,1,0])
+//        ninja.position = [0,0,3]
+//        
+//        models.append(ninja)
         models.append(valve)
         
         skybox = Skybox(filename: "SkyboxMap", pipelineDescriptor: skyboxDescriptor)
@@ -45,7 +45,7 @@ class Scene {
     }
     
     func sharedSetUp(){
-        camera = PerspectiveCamera(fov: 45, up: [0,1,0], position: [0,2,3], center: [0,2,0], aspect: 1, near: 0.01, far: 100)
+        camera = PerspectiveCamera(fov: 45, up: [0,1,0], position: [0,2,3], center: [0,2,0], aspect: 1, near: 0.01, far: 150)
         var lights:[PointLight] = []
         var light = PointLight()
         light.position = SIMD3<Float>(0,4.0,-2.0)

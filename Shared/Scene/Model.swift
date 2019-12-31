@@ -81,12 +81,14 @@ class Model: ModelNode{
         
         
         for submesh in submeshes{
+            var material = submesh.material
             renderEncoder.setRenderPipelineState(submesh.pipelinestate)
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.normal), index: Int(NormalTexture.rawValue))
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.color), index: Int(ColorTexture.rawValue))
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.roughness), index: Int(Roughness.rawValue))
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.metallic), index: Int(Metallic.rawValue))
             renderEncoder.setFragmentTexture(textureCollection.getTexture(index: submesh.textureIndex.ao), index: Int(AOTexture.rawValue))
+            renderEncoder.setFragmentBytes(&material, length: MemoryLayout<Material>.size, index: Int(MaterialBuffer.rawValue))
             
             let mesh = submesh.submesh
             renderEncoder.drawIndexedPrimitives(type: .triangle,

@@ -39,8 +39,15 @@ typedef enum {
     UVBuffer = 1,
     UniformBuffer = 11,
     LightBuffer = 12,
-    FragmentUniformBuffer = 13
+    FragmentUniformBuffer = 13,
+    MaterialBuffer = 14
 } BufferIndex;
+
+typedef struct{
+    vector_float3 albedo;
+    float roughness;
+    float metallic;
+} Material;
 
 typedef struct {
     vector_float3 position;

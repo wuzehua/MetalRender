@@ -7,6 +7,7 @@
 //
 
 import MetalKit
+import simd
 
 class Submesh{
     let submesh: MTKSubmesh
@@ -18,12 +19,16 @@ class Submesh{
         let ao:Int
     }
     
-    let textureIndex:TextureIndex
-    let pipelinestate: MTLRenderPipelineState!
     
+    let textureIndex:TextureIndex
+    let material: Material
+    let pipelinestate: MTLRenderPipelineState!
+
     init(submesh: MTKSubmesh, mdlSubmesh: MDLSubmesh, collection: TextureCollection, descriptor: MTLRenderPipelineDescriptor, vertexFunction: String, fragmentFunction: String) {
       self.submesh = submesh
+        print("\(mdlSubmesh.name) initialize")
       textureIndex = TextureIndex(material: mdlSubmesh.material, collection: collection)
+        material = Material(material: mdlSubmesh.material)
         pipelinestate = Submesh.makePipelineState(renderPipelineDescriptor: descriptor, vertexFunction: vertexFunction, fragmentFunction: fragmentFunction, textureIndex: textureIndex)
     }
 }
@@ -89,5 +94,31 @@ private extension Submesh.TextureIndex{
         ao = property(with: .ambientOcclusion)
     }
     
+}
+
+
+private extension Material{
+
     
+    init(material: MDLMaterial?) {
+        self.init()
+        
+        if material != nil{
+            print("\(material!.name) material")
+        }
+        if let color = material?.property(with: .baseColor),
+            color.type == .float3{
+            albedo = color.float3Value
+        }
+        
+        if let roughness = material?.property(with: .roughness),
+            roughness.type == .float{
+            self.roughness = roughness.floatValue
+        }
+        
+        if let metallic = material?.property(with: .metallic),
+            metallic.type == .float{
+            self.metallic = metallic.floatValue
+        }
+    }
 }
