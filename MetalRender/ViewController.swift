@@ -11,12 +11,26 @@ import MetalKit
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak var slector: UISegmentedControl!
     var renderer: RendererDeffer?
+    
+    @IBOutlet weak var leftButton: UIButton!
+    @IBOutlet weak var rightButton: UIButton!
+    @IBOutlet weak var upButton: UIButton!
+    @IBOutlet weak var downButton: UIButton!
+    @IBOutlet weak var forwardButton: UIButton!
+    @IBOutlet weak var backButton: UIButton!
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        leftButton.titleLabel?.layer.opacity = 0
+        rightButton.titleLabel?.layer.opacity = 0
+        upButton.titleLabel?.layer.opacity = 0
+        downButton.titleLabel?.layer.opacity = 0
+        forwardButton.titleLabel?.layer.opacity = 0
+        backButton.titleLabel?.layer.opacity = 0
         
         guard let metalView = view as? MTKView else {
             fatalError("Metal View is not set up")
@@ -32,17 +46,17 @@ class ViewController: UIViewController {
     @IBAction func forwardTouchDown(_ sender: UIButton) {
         var direction = Direction.None
         switch sender.titleLabel?.text {
-        case "back":
+        case "b":
             direction = .Back
-        case "forward":
+        case "f":
             direction = .Forward
-        case "left":
+        case "l":
             direction = .Left
-        case "right":
+        case "r":
             direction = .Right
-        case "up":
+        case "u":
             direction = .Up
-        case "down":
+        case "d":
             direction = .Down
         default:
             break
@@ -58,9 +72,6 @@ class ViewController: UIViewController {
         renderer?.moving = false
     }
     
-    @IBAction func changeModel(_ sender: UISegmentedControl) {
-        //renderer?.modelIndex = sender.selectedSegmentIndex
-    }
     
 }
 

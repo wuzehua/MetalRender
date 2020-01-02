@@ -8,6 +8,7 @@
 
 import Foundation
 import MetalKit
+import MetalPerformanceShaders
 import GLKit
 
 
@@ -29,6 +30,12 @@ class RendererDeffer: Renderer{
     var roughnessTexture: MTLTexture!
     var depthTexture: MTLTexture!
     
+    var defferDepthTexture: MTLTexture!
+    var defferBrightTexture: MTLTexture!
+    var defferRenderTexture: MTLTexture!
+    
+    var blurTexture: MTLTexture!
+    
     var vertexUniform = Uniforms()
     var fragmentUniform = FragmentUniform()
     
@@ -41,7 +48,10 @@ class RendererDeffer: Renderer{
     var gBufferRenderPassDescriptor: MTLRenderPassDescriptor!
     
     var defferRenderPipelineState: MTLRenderPipelineState!
-
+    var defferRenderPassDescriptor: MTLRenderPassDescriptor!
+    
+    var hdrComputePipelineState: MTLComputePipelineState!
+    
     var scene: Scene!
     
     var quadVertices: [Float] = [
@@ -68,10 +78,6 @@ class RendererDeffer: Renderer{
         
         super.init(metalView: metalView)
         
-        //quadVertexBuffer = Renderer.device.makeBuffer(bytes: quadVertices, length: MemoryLayout<SIMD2<Float>>.stride * quadVertices.count, options: [])
-        //quadUVBuffer = Renderer.device.makeBuffer(bytes: quadTexCoords, length: MemoryLayout<SIMD2<Float>>.stride * quadTexCoords.count, options: [])
-        
-        //scene = Scene()
         scene = Scene(renderPiplineDescriptor: buildGBufferRenderPipelineDescriptor(), skyboxDescriptor: buildSkyboxRenderPipelineDescriptor(),vertexFunction: "vertex_gbuffer", fragmentFunction: "fragment_gbuffer")
         
         let depthDescriptor = MTLDepthStencilDescriptor()
@@ -80,7 +86,11 @@ class RendererDeffer: Renderer{
         depthStencilState = Renderer.device.makeDepthStencilState(descriptor: depthDescriptor)!
         
         buildGbufferRenderPassDescriptor(size: metalView.drawableSize)
+        buildDefferTexture(size: metalView.drawableSize)
+        
+        blurTexture = buildTexture(pixelFormat: .bgra8Unorm, size: metalView.drawableSize, label: "Blur")
         buildDefferRenderPipelineState()
+        buildHDRComputePipelineState()
         
         fragmentUniform.numOfLight = scene.lightsCount
 
@@ -108,6 +118,20 @@ class RendererDeffer: Renderer{
         return texture
     }
     
+    private func buildTexture(pixelFormat: MTLPixelFormat, size: CGSize, label: String, usage:MTLTextureUsage) -> MTLTexture {
+           
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: Int(size.width), height: Int(size.height), mipmapped: false)
+           
+        descriptor.usage = usage
+        descriptor.storageMode = .private
+           
+        guard let texture = Renderer.device.makeTexture(descriptor: descriptor) else {
+            fatalError()
+        }
+           
+        texture.label = label
+        return texture
+    }
     
     private func buildGBufferTexture(size: CGSize){
         depthTexture = buildTexture(pixelFormat: .depth32Float, size: size, label: "Depth")
@@ -117,6 +141,11 @@ class RendererDeffer: Renderer{
         roughnessTexture = buildTexture(pixelFormat: .rgba16Float, size: size, label: "Roughness")
     }
     
+    private func buildDefferTexture(size: CGSize){
+        defferDepthTexture = buildTexture(pixelFormat: .depth32Float, size: size, label: "Deffer Depth")
+        defferBrightTexture = buildTexture(pixelFormat: .bgra8Unorm, size: size, label: "Deffer Bright", usage: [.shaderRead,.renderTarget,.shaderWrite])
+        defferRenderTexture = buildTexture(pixelFormat: .bgra8Unorm, size: size, label: "Deffer Render")
+    }
     
     private func buildSkyboxRenderPipelineDescriptor() -> MTLRenderPipelineDescriptor{
         let library = Renderer.library
@@ -144,8 +173,6 @@ class RendererDeffer: Renderer{
         descriptor.depthAttachmentPixelFormat = .depth32Float
         descriptor.label = "GBuffer State"
         
-        //descriptor.vertexFunction = Renderer.library?.makeFunction(name: "vertex_gbuffer")
-        //descriptor.fragmentFunction = Renderer.library?.makeFunction(name: "fragment_gbuffer")
         
         return descriptor
     }
@@ -163,10 +190,22 @@ class RendererDeffer: Renderer{
         gBufferRenderPassDescriptor.setUpDepthAttachment(texture: depthTexture, clearDepth: 1)
     }
     
+    private func buildDefferRenderDescriptor(size: CGSize){
+        defferRenderPassDescriptor = MTLRenderPassDescriptor()
+        buildDefferTexture(size: size)
+        let textures:[MTLTexture] = [defferRenderTexture,defferBrightTexture]
+        
+        for (index, texture) in textures.enumerated(){
+            defferRenderPassDescriptor.setUpColorAttachment(index: index, texture: texture)
+        }
+        
+        defferRenderPassDescriptor.setUpDepthAttachment(texture: defferDepthTexture, clearDepth: 1)
+    }
     
     private func buildDefferRenderPipelineState(){
         let descriptor = MTLRenderPipelineDescriptor()
-        descriptor.colorAttachments[0].pixelFormat = Renderer.colorPixelFormat
+        descriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+        descriptor.colorAttachments[1].pixelFormat = .bgra8Unorm
         descriptor.depthAttachmentPixelFormat = .depth32Float
         descriptor.label = "Deffer Render Pipeline"
         
@@ -180,7 +219,13 @@ class RendererDeffer: Renderer{
         }
     }
     
-    
+    private func buildHDRComputePipelineState(){
+        guard let kernel = Renderer.library?.makeFunction(name: "hdr_mix") else {
+            fatalError()
+        }
+        
+        hdrComputePipelineState = try! Renderer.device.makeComputePipelineState(function: kernel)
+    }
     
     private func renderGBufferPass(renderEncoder: MTLRenderCommandEncoder){
         var inversable = true
@@ -190,15 +235,12 @@ class RendererDeffer: Renderer{
                
         renderEncoder.setDepthStencilState(depthStencilState)
                
-        //vertexUniform.projectionMatrix = scene.camera.projectionMatrix
-        //vertexUniform.viewMatrix = scene.camera.viewMatrix
 
         vertexUniforms[currentVertexUniform].projectionMatrix = scene.camera.projectionMatrix
         vertexUniforms[currentVertexUniform].viewMatrix = scene.camera.viewMatrix
                
         for model in scene.models{
-            //vertexUniform.modelMatrix = model.modelMatrix
-            //vertexUniform.normalMatrix = GLKMatrix4Transpose(GLKMatrix4Invert(model.modelMatrix, &inversable))
+
             vertexUniforms[currentVertexUniform].modelMatrix = model.modelMatrix
             vertexUniforms[currentVertexUniform].normalMatrix = GLKMatrix4InvertAndTranspose(model.modelMatrix, &inversable)
             model.render(renderEncoder: renderEncoder, textureCollection: scene.textureCollection, renderFunc: {
@@ -220,27 +262,22 @@ class RendererDeffer: Renderer{
         renderEncoder.setRenderPipelineState(defferRenderPipelineState)
         
         
-        //fragmentUniform.cameraPosition = scene.camera.position
         
         fragmentUniforms[currentFragmentUniform].cameraPosition = scene.camera.position
         fragmentUniforms[currentFragmentUniform].numOfLight = scene.lightsCount
         
         renderEncoder.setVertexBytes(&quadVertices, length: MemoryLayout<Float>.size * quadVertices.count, index: Int(VertexBuffer.rawValue))
         renderEncoder.setVertexBytes(&quadTexCoords, length: MemoryLayout<Float>.size * quadTexCoords.count, index: Int(UVBuffer.rawValue))
-        //renderEncoder.setVertexBuffer(quadVertexBuffer, offset: 0, index: Int(VertexBuffer.rawValue))
-        //renderEncoder.setVertexBuffer(quadUVBuffer, offset: 0, index: Int(UVBuffer.rawValue))
-        
-        //renderEncoder.setFragmentBytes(&defferUniform, length: MemoryLayout<DefferUniform>.size, index: Int(FragmentUniformBuffer.rawValue))
+
         
         renderEncoder.setFragmentBytes(&fragmentUniforms[currentFragmentUniform], length: MemoryLayout<FragmentUniform>.size, index: Int(FragmentUniformBuffer.rawValue))
         
-        //renderEncoder.setFragmentBytes(&(scene.lights), length: MemoryLayout<PointLight>.size * scene.lights.count, index: Int(LightBuffer.rawValue))
+
         renderEncoder.setFragmentBuffer(scene.lightBuffer, offset: 0, index: Int(LightBuffer.rawValue))
         
         renderEncoder.setFragmentTexture(positionTexture, index: Int(PositionTexture.rawValue))
         renderEncoder.setFragmentTexture(normalTexture, index: Int(NormalTexture.rawValue))
         renderEncoder.setFragmentTexture(albedoTexture, index: Int(ColorTexture.rawValue))
-        //renderEncoder.setFragmentTexture(ssaoBlurTexture, index: Int(SSAOTexture.rawValue))
         renderEncoder.setFragmentTexture(TextureCollection.brdfLut, index: Int(BRDFLut.rawValue))
         renderEncoder.setFragmentTexture(roughnessTexture, index: Int(RoughnessTexture.rawValue))
         renderEncoder.setFragmentTexture(scene.skybox.skybox, index: Int(SkyboxCube.rawValue))
@@ -257,7 +294,6 @@ class RendererDeffer: Renderer{
     
     func rotateCamera(trans: SIMD2<Float>)
     {
-        //scene.camera.rotateAroundCneter(trans: trans)
         scene.camera.rotateCamera(trans: trans)
     }
     
@@ -268,8 +304,8 @@ class RendererDeffer: Renderer{
 
     override func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         scene.adjustView(size: size)
-        buildGBufferTexture(size: size)
         buildGbufferRenderPassDescriptor(size: size)
+        buildDefferRenderDescriptor(size: size)
     }
     
     override func draw(in view: MTKView) {
@@ -288,45 +324,53 @@ class RendererDeffer: Renderer{
         
         view.depthStencilPixelFormat = .depth32Float
         renderGBufferPass(renderEncoder: gBufferEncoder)
-        offScreenCommandBuffer.commit()
         
-        guard let descriptor = view.currentRenderPassDescriptor,
-            let onScreenCommandBuffer = Renderer.commandQueue.makeCommandBuffer(),
-            let renderEncoder = onScreenCommandBuffer.makeRenderCommandEncoder(descriptor: descriptor) else {
+        guard let defferEncoder = offScreenCommandBuffer.makeRenderCommandEncoder(descriptor: defferRenderPassDescriptor) else{
             return
         }
         
-        //renderEncoder.setDepthStencilState(depthStencilState)
-        //scene.renderTest(renderEncoder: renderEncoder, index: modelIndex)
-        renderDefferPass(renderEncoder: renderEncoder)
-
+        renderDefferPass(renderEncoder: defferEncoder)
         
-        //renderEncoder.endEncoding()
-        guard let drawable = view.currentDrawable else {
-            return
-        }
-
-        onScreenCommandBuffer.present(drawable)
-        
-//        offScreenCommandBuffer.enqueue()
-//        onScreenCommandBuffer.enqueue()
-//
-//        dispatchQueue.async(execute: offScreenCommandBuffer.commit)
-//
-//        weak var sem = semaphore
-//        dispatchQueue.async {
-//            onScreenCommandBuffer.addCompletedHandler { _ in
-//                sem?.signal()
-//            }
-//            onScreenCommandBuffer.commit()
-//        }
-//        __dispatch_barrier_sync(dispatchQueue) {}
-        onScreenCommandBuffer.addCompletedHandler{ _ in
+        //offScreenCommandBuffer.commit()
+        offScreenCommandBuffer.addCompletedHandler{ _ in
             self.semaphore.signal()
         }
         
-        onScreenCommandBuffer.commit()
+        let blur = MPSImageGaussianBlur(device: Renderer.device, sigma: 9.0)
+        blur.label = "Gaussian Blur"
+        blur.encode(commandBuffer: offScreenCommandBuffer, inPlaceTexture: &defferBrightTexture, fallbackCopyAllocator: nil)
         
+        offScreenCommandBuffer.commit()
+        
+        guard let onScreenCommandBuffer = Renderer.commandQueue.makeCommandBuffer() else {
+            return
+        }
+        
+        
+        
+        guard let hdrEncoder = onScreenCommandBuffer.makeComputeCommandEncoder(),
+                    let drawable = view.currentDrawable else {
+            return
+        }
+        
+        hdrEncoder.pushDebugGroup("HDR")
+        hdrEncoder.setComputePipelineState(hdrComputePipelineState)
+        hdrEncoder.setTexture(defferRenderTexture, index: Int(ColorTexture.rawValue))
+        hdrEncoder.setTexture(defferBrightTexture, index: Int(BrightTexture.rawValue))
+        hdrEncoder.setTexture(drawable.texture, index: Int(ImageTexture.rawValue))
+        
+        let threadGroupCount = MTLSizeMake(8, 8, 1)
+        let threadGroup = MTLSizeMake((drawable.texture.width + threadGroupCount.width - 1) / threadGroupCount.width, (drawable.texture.height + threadGroupCount.height - 1) / threadGroupCount.height, 1)
+        
+        hdrEncoder.dispatchThreadgroups(threadGroup, threadsPerThreadgroup: threadGroupCount)
+        
+        
+        hdrEncoder.popDebugGroup()
+        hdrEncoder.endEncoding()
+        
+        onScreenCommandBuffer.present(drawable)
+        onScreenCommandBuffer.commit()
+                
     }
     
     

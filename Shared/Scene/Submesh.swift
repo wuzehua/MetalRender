@@ -120,5 +120,6 @@ private extension Material{
             metallic.type == .float{
             self.metallic = metallic.floatValue
         }
+        
     }
 }

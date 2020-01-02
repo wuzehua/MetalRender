@@ -109,13 +109,13 @@ fragment GBufferOut fragment_gbuffer(VertexOut in[[stage_in]],
     if(hasRoughnessTexture){
         out.roughness.x = roughnessTexture.sample(textureSampler, in.uv).r;
     }else{
-        out.roughness.x = material.roughness;
+        out.roughness.x = 0.3;
     }
     
     if(hasMetallicTexture){
         out.roughness.y = metallicTexture.sample(textureSampler, in.uv).r;
     }else{
-        out.roughness.y = material.metallic;
+        out.roughness.y = 0.9;
     }
     
     if(hasAOTexture){

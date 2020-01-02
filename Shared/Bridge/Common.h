@@ -31,7 +31,8 @@ typedef enum {
     SSAOTexture = 8,
     ImageTexture = 9,
     RoughnessTexture = 10,
-    AOTexture = 11
+    AOTexture = 11,
+    BrightTexture = 12
 } TextureIndex;
 
 typedef enum {

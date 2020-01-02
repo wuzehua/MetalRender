@@ -48,7 +48,7 @@ class Scene {
         camera = PerspectiveCamera(fov: 45, up: [0,1,0], position: [0,2,3], center: [0,2,0], aspect: 1, near: 0.01, far: 150)
         var lights:[PointLight] = []
         var light = PointLight()
-        light.position = SIMD3<Float>(0,4.0,-2.0)
+        light.position = SIMD3<Float>(0,1.0,0.0)
         light.lightColor = SIMD3<Float>(1.0,1.0,1.0)
         light.intensity = 150
         light.radius = 5

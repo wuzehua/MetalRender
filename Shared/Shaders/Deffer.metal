@@ -15,6 +15,11 @@ struct VertexOut{
     float2 uv;
 };
 
+struct DefferOut{
+    float4 color[[color(0)]];
+    float4 bright[[color(1)]];
+};
+
 //法线分布函数
 float D_TR_GXX(float NH, float roughness)
 {
@@ -75,7 +80,7 @@ vertex VertexOut deffer_vertex_main(constant float2* quadVertices[[buffer(Vertex
     return out;
 }
 
-fragment float4 deffer_fragment_main(VertexOut in[[stage_in]],
+fragment DefferOut deffer_fragment_main(VertexOut in[[stage_in]],
                                      texture2d<float> positionTexture[[texture(PositionTexture)]],
                                      texture2d<float> normalTexture[[texture(NormalTexture)]],
                                      texture2d<float> albedoTexture[[texture(ColorTexture)]],
@@ -89,11 +94,13 @@ fragment float4 deffer_fragment_main(VertexOut in[[stage_in]],
 {
     
     constexpr sampler textureSampler(min_filter::linear, mag_filter::linear);
-    
+    DefferOut out;
     float3 n = normalTexture.sample(textureSampler, in.uv).xyz;
     float3 albedo = albedoTexture.sample(textureSampler, in.uv).xyz;
     if(n.x == 0 && n.y == 0 && n.z == 0){
-        return float4(albedo,1);
+        out.color = float4(albedo,1);
+        out.bright = float4(0);
+        return out;
     }
     
     float3 shadePoint = positionTexture.sample(textureSampler, in.uv).xyz;
@@ -171,10 +178,16 @@ fragment float4 deffer_fragment_main(VertexOut in[[stage_in]],
     float3 IBL = IBLDiffuse + specMipColor * IBLSpecular;
     
     
+    
     float3 color = (IBL + L) * ao;
-    color = color / (color + 1);
-    //color = pow(color, 1 / 2.2);
+    //color = color / (color + 1);
+    color = pow(color, 2.2);
+    out.color = float4(color,1);
+    
+    float bright = dot(color, float3(0.2126,0.7152,0.0722));
+    
+    out.bright = bright > 1 ? float4(color,1) : float4(0);
     
     
-    return float4(color,1);
+    return out;
 }

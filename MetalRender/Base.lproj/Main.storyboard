@@ -15,39 +15,13 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="xq0-2W-QWj">
-                                <rect key="frame" x="123.5" y="64" width="167" height="32"/>
-                                <segments>
-                                    <segment title="Gun"/>
-                                    <segment title="Valve"/>
-                                    <segment title="Barrel"/>
-                                </segments>
-                                <connections>
-                                    <action selector="changeModel:" destination="BYZ-38-t0r" eventType="valueChanged" id="Zw9-70-Auu"/>
-                                </connections>
-                            </segmentedControl>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="Tc5-D5-DJE">
-                                <rect key="frame" x="308" y="730" width="66" height="102"/>
+                                <rect key="frame" x="303" y="682" width="71" height="150"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Yt-lb-vvY">
-                                        <rect key="frame" x="0.0" y="0.0" width="66" height="36"/>
-                                        <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                        <state key="normal" title="back">
-                                            <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="forwardTouchDown:" destination="BYZ-38-t0r" eventType="touchDown" id="sIc-fK-Jne"/>
-                                            <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchUpOutside" id="HpA-yE-MD8"/>
-                                            <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchDragExit" id="Re0-8B-9FL"/>
-                                            <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchUpInside" id="aGI-gI-qk5"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MWN-pl-D5J">
-                                        <rect key="frame" x="0.0" y="66" width="66" height="36"/>
-                                        <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                        <state key="normal" title="forward">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MWN-pl-D5J">
+                                        <rect key="frame" x="0.0" y="0.0" width="71" height="60"/>
+                                        <color key="backgroundColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" title="f" image="Up">
                                             <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                         </state>
                                         <connections>
@@ -57,16 +31,26 @@
                                             <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchDragExit" id="K2n-1p-dvI"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Yt-lb-vvY">
+                                        <rect key="frame" x="0.0" y="90" width="71" height="60"/>
+                                        <state key="normal" title="b" image="Down">
+                                            <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="forwardTouchDown:" destination="BYZ-38-t0r" eventType="touchDown" id="sIc-fK-Jne"/>
+                                            <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchUpOutside" id="HpA-yE-MD8"/>
+                                            <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchDragExit" id="Re0-8B-9FL"/>
+                                            <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchUpInside" id="aGI-gI-qk5"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="5TX-ZZ-U13">
-                                <rect key="frame" x="40" y="700" width="90" height="132"/>
+                                <rect key="frame" x="40" y="628" width="152" height="204"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vqR-be-fvD">
-                                        <rect key="frame" x="30" y="0.0" width="30" height="36"/>
-                                        <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                        <state key="normal" title="up">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vqR-be-fvD">
+                                        <rect key="frame" x="40.5" y="0.0" width="71" height="60"/>
+                                        <state key="normal" title="u" image="Up">
                                             <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                         </state>
                                         <connections>
@@ -77,15 +61,11 @@
                                         </connections>
                                     </button>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="WSh-u4-bUl">
-                                        <rect key="frame" x="0.0" y="48" width="90" height="36"/>
+                                        <rect key="frame" x="0.0" y="72" width="152" height="60"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8GC-BL-39d">
-                                                <rect key="frame" x="0.0" y="0.0" width="30" height="36"/>
-                                                <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                                <state key="normal" title="left">
-                                                    <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
-                                                </state>
+                                            <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8GC-BL-39d">
+                                                <rect key="frame" x="0.0" y="0.0" width="65" height="60"/>
+                                                <state key="normal" title="l" image="Left"/>
                                                 <connections>
                                                     <action selector="forwardTouchDown:" destination="BYZ-38-t0r" eventType="touchDown" id="cWm-vJ-sC8"/>
                                                     <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Is1-zl-8h4"/>
@@ -93,11 +73,9 @@
                                                     <action selector="stopMoving:" destination="BYZ-38-t0r" eventType="touchUpOutside" id="Soa-7G-NPP"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iLU-iM-ORT">
-                                                <rect key="frame" x="50" y="0.0" width="40" height="36"/>
-                                                <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                                <state key="normal" title="right">
+                                            <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iLU-iM-ORT">
+                                                <rect key="frame" x="85" y="0.0" width="67" height="60"/>
+                                                <state key="normal" title="r" image="Right">
                                                     <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                                 </state>
                                                 <connections>
@@ -109,11 +87,10 @@
                                             </button>
                                         </subviews>
                                     </stackView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nAh-p8-BQX">
-                                        <rect key="frame" x="21" y="96" width="48" height="36"/>
-                                        <color key="backgroundColor" systemColor="systemIndigoColor" red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                        <state key="normal" title="down">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nAh-p8-BQX">
+                                        <rect key="frame" x="40.5" y="144" width="71" height="60"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" title="d" image="Down">
                                             <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                         </state>
                                         <connections>
@@ -129,16 +106,19 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Tc5-D5-DJE" secondAttribute="trailing" constant="40" id="5o7-tH-JNU"/>
-                            <constraint firstItem="xq0-2W-QWj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="8ZP-fW-074"/>
                             <constraint firstAttribute="bottomMargin" secondItem="Tc5-D5-DJE" secondAttribute="bottom" constant="30" id="8aJ-dh-RmQ"/>
                             <constraint firstItem="5TX-ZZ-U13" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="R47-B7-BJy"/>
-                            <constraint firstItem="xq0-2W-QWj" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="20" id="lBa-OK-lbH"/>
                             <constraint firstAttribute="bottomMargin" secondItem="5TX-ZZ-U13" secondAttribute="bottom" constant="30" id="ymt-4C-Zla"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
-                        <outlet property="slector" destination="xq0-2W-QWj" id="9Dm-ac-qKF"/>
+                        <outlet property="backButton" destination="9Yt-lb-vvY" id="Ma4-Z7-tkd"/>
+                        <outlet property="downButton" destination="nAh-p8-BQX" id="Vhg-tm-vhk"/>
+                        <outlet property="forwardButton" destination="MWN-pl-D5J" id="Jiz-6Q-M3E"/>
+                        <outlet property="leftButton" destination="8GC-BL-39d" id="zA1-NC-PyP"/>
+                        <outlet property="rightButton" destination="iLU-iM-ORT" id="TXi-rf-f9i"/>
+                        <outlet property="upButton" destination="vqR-be-fvD" id="EtM-fl-U5q"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -146,4 +126,10 @@
             <point key="canvasLocation" x="131.8840579710145" y="138.61607142857142"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="Down" width="60" height="60"/>
+        <image name="Left" width="60" height="60"/>
+        <image name="Right" width="60" height="60"/>
+        <image name="Up" width="60" height="60"/>
+    </resources>
 </document>
